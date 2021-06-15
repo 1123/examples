@@ -15,7 +15,7 @@ import java.nio.file.Paths;
 import java.io.FileInputStream;
 import java.io.InputStream;
 
-public class ProducerExample {
+public class AvroProducerExample {
 
     private static final String TOPIC = "transactions";
     private static final Properties props = new Properties();
@@ -46,14 +46,16 @@ public class ProducerExample {
         props.put(ProducerConfig.ACKS_CONFIG, "all");
         props.put(ProducerConfig.RETRIES_CONFIG, 0);
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        props.put("basic.auth.credentials.source", "USER_INFO");
+        props.put("basic.auth.user.info", "fred:letmein");
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
 
-        try (KafkaProducer<String, Payment> producer = new KafkaProducer<String, Payment>(props)) {
+        try (KafkaProducer<String, Payment> producer = new KafkaProducer<>(props)) {
 
             for (long i = 0; i < 10; i++) {
                 final String orderId = "id" + Long.toString(i);
                 final Payment payment = new Payment(orderId, 1000.00d);
-                final ProducerRecord<String, Payment> record = new ProducerRecord<String, Payment>(TOPIC, payment.getId().toString(), payment);
+                final ProducerRecord<String, Payment> record = new ProducerRecord<>(TOPIC, payment.getId().toString(), payment);
                 producer.send(record);
                 Thread.sleep(1000L);
             }
@@ -61,9 +63,7 @@ public class ProducerExample {
             producer.flush();
             System.out.printf("Successfully produced 10 messages to a topic called %s%n", TOPIC);
 
-        } catch (final SerializationException e) {
-            e.printStackTrace();
-        } catch (final InterruptedException e) {
+        } catch (final SerializationException | InterruptedException e) {
             e.printStackTrace();
         }
 

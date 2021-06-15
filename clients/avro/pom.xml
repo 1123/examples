@@ -26,7 +26,7 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <properties>
     <!-- Keep versions as properties to allow easy modification -->
     <java.version>8</java.version>
-    <avro.version>1.9.1</avro.version>
+    <avro.version>1.10.2</avro.version>
     <gson.version>2.2.4</gson.version>
     <!-- Maven properties for compilation -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -59,6 +59,11 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
       <artifactId>kafka-avro-serializer</artifactId>
       <version>${io.confluent.schema-registry.version}</version>
     </dependency>
+      <dependency>
+          <groupId>io.confluent</groupId>
+          <artifactId>kafka-json-schema-serializer</artifactId>
+          <version>${io.confluent.schema-registry.version}</version>
+      </dependency>
     <dependency>
       <groupId>org.apache.kafka</groupId>
       <artifactId>kafka-clients</artifactId>
@@ -105,19 +110,20 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
         <version>${avro.version}</version>
         <executions>
           <execution>
-          <phase>generate-sources</phase>
-          <goals>
-            <goal>schema</goal>
-          </goals>
-          <configuration>
-            <sourceDirectory>${project.basedir}/src/main/resources/avro/io/confluent/examples/clients/basicavro/</sourceDirectory>
-            <includes>
-              <include>Payment.avsc</include>
-            </includes>
-            <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
-          </configuration>
-        </execution>
-      </executions>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>schema</goal>
+            </goals>
+            <configuration>
+              <sourceDirectory>${project.basedir}/src/main/resources/avro/io/confluent/examples/clients/basicavro/</sourceDirectory>
+              <includes>
+                <include>Payment.avsc</include>
+              </includes>
+              <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
+              <enableDecimalLogicalType>true</enableDecimalLogicalType>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
           <groupId>io.confluent</groupId>
@@ -131,6 +137,7 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
               <subjects>
                   <transactions-value>src/main/resources/avro/io/confluent/examples/clients/basicavro/Payment2a.avsc</transactions-value>
               </subjects>
+              <outputDirectory>/tmp/avro-examples/schema-registry-maven-plugin</outputDirectory>
           </configuration>
           <goals>
               <goal>test-compatibility</goal>
@@ -139,6 +146,7 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
       <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-checkstyle-plugin</artifactId>
+          <version>3.1.2</version>
           <executions>
               <!--
                This declaration merges with the one in the parent, rather
